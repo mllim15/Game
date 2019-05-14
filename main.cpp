@@ -1,3 +1,5 @@
+// Michelle Lim
+
 // pacman game
 #include <SFML/Graphics.hpp>   //using namespace sf
 #include <time.h>
@@ -290,7 +292,7 @@ int main()
         text.setString("SCORE: " + std::to_string(score));
         window.draw(text);
         
-        //Show everything we have drawn on the screen
+        // show everything we have drawn on the screen
         window.display();
     }
     return 0;
