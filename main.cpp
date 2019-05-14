@@ -1,6 +1,6 @@
-// simple pac man game where u only need to clear all dots
+// simple pac man game where u only need to get one dot
+// and try to get as many before the time runs out
 #include <SFML/Graphics.hpp>   //using namespace sf
-#include <time.h>
 
 //dimensions for window size and background
 int num_vertBox = 30, num_horzBox = 30;
@@ -12,61 +12,62 @@ int h = size * num_vertBox;     //background number of pixels in height
 int direction;    //direction character is moving
 int character_length = 1; // size of the character
 
-struct pacman
-{
-    int x, y;       // only need one sprite needed for one pacman item
+struct pac {
+    int x, y;   // only need one sprite needed for one pacman item
 }p;
 
 // this is the dot that the pacman will eat
-// actual dots in game is an array of x,y coordinates of dot sprite
-struct Fruit
-{
-    int x, y;    //each sprite of food needs an x,y coordinate
-}food[100];
+struct dots {
+    int x, y;    // only need one sprite needed for one dot item
+}d;
+
+
+void move() {
+     //check if pacman = dot location
+     if (((p.x) == d.x) && ((p.y) == d.y)) {
+         //Randomly place food somewhere else
+         d.x = rand() % num_horzBox;
+         d.y = rand() % num_vertBox;
+     }
+}
 
 int main()
 {
     //Setting pseudorandom time, TODO:discuss true random vs pseudorandom
     srand(time(0));
     
-    //Window that we can play the game in
+    // window that we can play the game in
     sf::RenderWindow window(sf::VideoMode(w, h), "PacMan Game");
     
-    //Textures load an image into the GPU Memory
+    // textures load an image into the GPU Memory
     sf::Texture t1, t2, t3;
     // image of the background
-    t1.loadFromFile("/Users/michellelim/Desktop/images/white.png");
+    t1.loadFromFile("/Users/michellelim/Desktop/images/blue.png");
     // image of dot
     t2.loadFromFile("/Users/michellelim/Desktop/images/dot.png");
     // image of pacman
     t3.loadFromFile("/Users/michellelim/Desktop/images/pacman.png");
     
-    //Sprite has physical dimmensions that can be set in
-    //coordinate system, setPosition(x,y), and drawn on screen
-    sf::Sprite background(t1);
-    sf::Sprite dot(t2);
-    sf::Sprite pacman(t3);
+    // sprite has physical dimmensions that can be set in
+    // coordinate system, setPosition(x,y), and drawn on screen
+    sf::Sprite backgroundSprite(t1);
+    sf::Sprite dotSprite(t2);
+    sf::Sprite pacmanSprite(t3);
     
-    //***NEW*** initially place food somewhere on screen
-    food[0].x = 10;
-    food[0].y = 10;
+    // setting the icon; i am making the icon the same as pacman sprite
+    sf::Image gameIcon;
+    gameIcon.loadFromFile("/Users/michellelim/Desktop/images/pacman.png");
+    // using icon size as the dimensions and setting it
+    window.setIcon(gameIcon.getSize().x, gameIcon.getSize().y, gameIcon.getPixelsPtr());
     
-    // initially place snake 1 somewhere
-    p.x = 15;
-    p.y = 15;
-
+    // initially set the position of pacman
+    pacmanSprite.setPosition(200, 200);
     
-    sf::Clock clock;
-    float timer = 0.0f, delay = 0.1f;
+    // initially set the position of dot
+    dotSprite.setPosition(100, 300);
+    
     while (window.isOpen())
     {
-        //Error in class I placed this before the while loop
-        //Should be placed in while loop as shown here to update
-        //timer
-        float time = clock.getElapsedTime().asSeconds();
-        clock.restart();
-        timer += time;
-        
         //Allow us to check when a user does something
         sf::Event e;
         
@@ -80,16 +81,24 @@ int main()
             }
         }
         
-        // controls for pacman by user
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) direction = 0;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) direction = 1;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) direction = 2;
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) direction = 3;
-        
         /*****************
          //Draw in window
          *****************/
         window.clear();    //clear the window so new frame can be drawn in
+        
+        // controls for pacman by user
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+            pacmanSprite.move(0, -1);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+            pacmanSprite.move(0, 1);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+            pacmanSprite.move(-1, 0);
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+            pacmanSprite.move(1, 0);
+        }
         
         //NOTE: Order matters as we will draw over items listed first.
         //Hence the background should be the first thing you will always do
@@ -99,25 +108,17 @@ int main()
             for (int j = 0; j < num_vertBox; j++)
             {
                 //Set position of background sprite one at a time
-                background.setPosition(i*size, j*size);
+                backgroundSprite.setPosition(i*size, j*size);
                 //Draw sprite1 but, do not show it on screen.
-                window.draw(background);
+                window.draw(backgroundSprite);
             }
         }
         
-        // draw dots next otherwise background will be drawn over dots
-        for (int i=0; i<num_horzBox; i++) {
-            for (int j=0; j<num_vertBox; j++) {
-                // set position of dot sprite one at a time
-                dot.setPosition(i*size, j*size);
-                window.draw(dot);
-            }
-        }
-    
-        // set position of pacman sprite
-        pacman.setPosition(p.x*size, p.y*size);
-        window.draw(pacman);
+        // display pacman sprite
+        window.draw(pacmanSprite);
         
+        // display dot sprite
+        window.draw(dotSprite);
         
         //Show everything we have drawn on the screen
         window.display();
